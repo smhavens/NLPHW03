@@ -27,7 +27,7 @@ import numpy as np
 def train_embeddings():
     '''TRAIN WORD EMBEDDINGS
     This will be making use of the dataset from wikipedia and the first step'''
-    dataset = load_dataset("wikipedia", "20220301. simple")
+    dataset = load_dataset("wikipedia", "20220301.simple")
     # check the first example of the training portion of the dataset :
     # print(dataset['train'][0])
     dataset_size = len(dataset)
@@ -35,7 +35,7 @@ def train_embeddings():
     embeddings_model.save("word2vec.model")
     
     embeddings_model = Word2Vec.load("word2vec.model")
-    embeddings_model.train(dataset, total_examples=dataset_size)
+    embeddings_model.train(dataset, total_examples=dataset_size, epochs=15)
 
 
 def compare_embeddings(model):
@@ -55,6 +55,7 @@ def main():
     compare_embeddings(model)
     quantify_bias(model)
     text_classifier(model)
+    print("No errors?")
     
 
 if __name__ == "__main__":
