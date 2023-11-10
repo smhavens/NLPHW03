@@ -91,30 +91,53 @@ def train_embeddings():
                      vector_size= 50)
     embeddings_model.save("word2vec.model")
     
+    skip_model = Word2Vec(
+                     data,
+                     epochs= 10,
+                     window=10,
+                     vector_size= 50,
+                     sg=1)
+    skip_model.save("skip2vec.model")
+    
     embeddings_model = Word2Vec.load("word2vec.model")
+    skip_model = Word2Vec.load("skip2vec.model")
     # embeddings_model.train(dataset, total_examples=dataset_size, epochs=15)
     # print(embeddings_model['train'])
     # print(embeddings_model.wv["france"])
-    return embeddings_model
+    return embeddings_model, skip_model
 
 
-def compare_embeddings(model):
+def compare_embeddings(cbow, skip):
     '''COMPARE EMBEDDINGS'''
 
 
-def quantify_bias(model):
+def quantify_bias(cbow, skip):
     '''QUANTIFY BIASES'''
 
 
-def text_classifier(model):
+def text_classifier(cbow, skip):
     '''SIMPLE TEXT CLASSIFIER'''
     
 
 def main():
-    model = train_embeddings()
-    compare_embeddings(model)
-    quantify_bias(model)
-    text_classifier(model)
+    parser = argparse.ArgumentParser(
+        prog='word_embedding',
+        description='This program will train a word embedding model using simple wikipedia.',
+        epilog='To skip training the model and to used the saved model "word2vec.model", use the command --skip or -s.'
+    )
+    parser.add_argument('-s', '--skip', action='store_true')
+    
+    args = parser.parse_args()
+    skip_model = None
+    cbow_model = None
+    if args.skip:
+        cbow_model = Word2Vec.load("word2vec.model")
+        skip_model = Word2Vec.load("skip2vec.model")
+    else:
+        cbow_model, skip_model = train_embeddings()
+    compare_embeddings(cbow_model, skip_model)
+    quantify_bias(cbow_model, skip_model)
+    text_classifier(cbow_model, skip_model)
     print("No errors?")
     
 
