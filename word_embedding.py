@@ -8,6 +8,9 @@ import gensim.downloader as api
 from gensim import corpora
 from gensim.test.utils import common_texts
 from gensim.models import Word2Vec
+from gensim.models import KeyedVectors
+from gensim.models import fasttext
+from gensim.test.utils import datapath
 import math
 import sys
 import glob
@@ -17,6 +20,7 @@ import nltk
 import scipy.sparse
 import numpy as np
 import string
+import io
 
 
 '''STEPS FOR CODE:
@@ -25,6 +29,21 @@ import string
 3. Quantify biases that exist in these word embeddings;
 4. Use your word embeddings as features in a simple text classifier;
 '''
+
+
+def load_vectors(fname):
+    fin = io.open(fname, 'r', encoding='utf-8', newline='\n', errors='ignore')
+    n, d = map(int, fin.readline().split())
+    data = {}
+    print("Hello", n, d)
+    for line in fin:
+        tokens = line.rstrip().split(' ')
+        data[tokens[0]] = map(float, tokens[1:])
+        # print(data)
+        
+    print(data)
+    return data
+
 
 def train_embeddings():
     '''TRAIN WORD EMBEDDINGS
@@ -107,15 +126,44 @@ def train_embeddings():
     return embeddings_model, skip_model
 
 
-def compare_embeddings(cbow, skip):
+def compare_embeddings(cbow, skip, urban, fasttext):
     '''COMPARE EMBEDDINGS'''
+    print("Most Similar to dog")
+    print("cbow", cbow.wv.most_similar(positive=['dog'], negative=[], topn=2))
+    print("skip", skip.wv.most_similar(positive=['dog'], negative=[], topn=2))
+    print("urban", urban.most_similar(positive=['dog'], negative=[], topn=2))
+    print("fasttext", fasttext.most_similar(positive=['dog'], negative=[], topn=2))
+    
+    print("\nMost Similar to Pizza - Pepperoni + Pretzel")
+    print("cbow", cbow.wv.most_similar(positive=['pizza', 'pretzel'], negative=['pepperoni'], topn=2))
+    print("skip", skip.wv.most_similar(positive=['pizza', 'pretzel'], negative=['pepperoni'], topn=2))
+    print("urban", urban.most_similar(positive=['pizza', 'pretzel'], negative=['pepperoni'], topn=2))
+    print("fasttext", fasttext.most_similar(positive=['pizza', 'pretzel'], negative=['pepperoni'], topn=2))
+    
+    print("\nMost Similar to witch - woman + man")
+    print("cbow", cbow.wv.most_similar(positive=['witch', 'man'], negative=['woman'], topn=2))
+    print("skip", skip.wv.most_similar(positive=['witch', 'man'], negative=['woman'], topn=2))
+    print("urban", urban.most_similar(positive=['witch', 'man'], negative=['woman'], topn=2))
+    print("fasttext", fasttext.most_similar(positive=['witch', 'man'], negative=['woman'], topn=2))
+    
+    print("\nMost Similar to mayor - town + country")
+    print("cbow", cbow.wv.most_similar(positive=['mayor', 'country'], negative=['town'], topn=2))
+    print("skip", skip.wv.most_similar(positive=['mayor', 'country'], negative=['town'], topn=2))
+    print("urban", urban.most_similar(positive=['mayor', 'country'], negative=['town'], topn=2))
+    print("fasttext", fasttext.most_similar(positive=['mayor', 'country'], negative=['town'], topn=2))
+    
+    print("\nMost Similar to death")
+    print("cbow", cbow.wv.most_similar(positive=['death'], negative=[], topn=2))
+    print("skip", skip.wv.most_similar(positive=['death'], negative=[], topn=2))
+    print("urban", urban.most_similar(positive=['death'], negative=[], topn=2))
+    print("fasttext", fasttext.most_similar(positive=['death'], negative=[], topn=2))
 
 
-def quantify_bias(cbow, skip):
+def quantify_bias(cbow, skip, urban, fasttext):
     '''QUANTIFY BIASES'''
 
 
-def text_classifier(cbow, skip):
+def text_classifier(cbow, skip, urban, fasttext):
     '''SIMPLE TEXT CLASSIFIER'''
     
 
@@ -126,18 +174,49 @@ def main():
         epilog='To skip training the model and to used the saved model "word2vec.model", use the command --skip or -s.'
     )
     parser.add_argument('-s', '--skip', action='store_true')
+    parser.add_argument('-e', '--extra', action='store_true')
     
     args = parser.parse_args()
     skip_model = None
     cbow_model = None
+    ud_model = None
+    wiki_model = None
     if args.skip:
+        print("Skipping")
         cbow_model = Word2Vec.load("word2vec.model")
         skip_model = Word2Vec.load("skip2vec.model")
+        ud_model = KeyedVectors.load("urban2vec.model")
+        print("Have ud data")
+        wiki_model = KeyedVectors.load("wiki2vec.model")
+        print("Have wiki data")
+    elif args.extra:
+        print("Extra mode")
+        cbow_model = Word2Vec.load("word2vec.model")
+        skip_model = Word2Vec.load("skip2vec.model")
+        print("have my embeddings.")
+        # wiki = 
+        wiki_model = KeyedVectors.load_word2vec_format("wiki-news-300d-1M-subwords.vec", binary=False) 
+        # load_vectors("wiki-news-300d-1M-subwords.vec")
+        print("Have wiki data")
+        ud_model = KeyedVectors.load_word2vec_format("ud_basic.vec", binary=False) 
+        # load_vectors(r"ud_embeddings\ud_basic.vec")
+        print("Have ud data")
+        wiki_model.save("wiki2vec.model")
+        ud_model.save("urban2vec.model")
     else:
         cbow_model, skip_model = train_embeddings()
-    compare_embeddings(cbow_model, skip_model)
-    quantify_bias(cbow_model, skip_model)
-    text_classifier(cbow_model, skip_model)
+        wiki_model = KeyedVectors.load_word2vec_format("wiki-news-300d-1M-subwords.vec", binary=False)
+        ud_model = KeyedVectors.load_word2vec_format("ud_basic.vec", binary=False)
+        wiki_model.save("wiki2vec.model")
+        ud_model.save("urban2vec.model")
+        # wiki_model.save("wiki2vec.model")
+        # ud_model.save("urban2vec.model")
+    
+    
+    
+    compare_embeddings(cbow_model, skip_model, ud_model, wiki_model)
+    quantify_bias(cbow_model, skip_model, ud_model, wiki_model)
+    text_classifier(cbow_model, skip_model, ud_model, wiki_model)
     print("No errors?")
     
 
