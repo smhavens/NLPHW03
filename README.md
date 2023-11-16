@@ -41,10 +41,22 @@ These were the results of my comparison of embeddings using the gensim BOW, Skip
 I tried of variety of comparisons, from simple ones like 'dog', to more complex comparisons as seen with 'Pizza - Pepperoni + Pretzel'. I found the fasttext pre-trained wiki-news model to be the least interesting, as it often returned the keyword with added symbols (as you see with it returning 'death-' and 'death--' for most similar to 'death').
 
 ### Bias
-
+For my Bias Study extension, I looked into WEAT and created my own subcategory focused on religion, as it was never mentioned in their paper or documentation.
 ![image](https://github.com/smhavens/NLPHW03/assets/55886989/70a233a6-6f93-4a49-9a4b-5c5244ae3674)
 
+As seen with Religion and Art wrt Career and Family & Religion and Weapons wrt Male and Female Terms, there is bias to be acknowledged, especially in regards to the BOW Simple Wikipedia model and to a similar extent the Skip-gram Simple Wikipedia model. I believe these embeddings could be useful in understanding how religion is deeply ingrained in certain aspects of life, such as it appears to be with art here.
+
 ### Classification
+For classification, I used the Simple Wikipedia BOW model to see its impact on classifying IMDB sentiment scores. I based the code mainly off of what was covered in lecture 11, replacing the vector with a new d-dimensional vector holding the averaged embeddings of the IMDB database documents.
 ![image](https://github.com/smhavens/NLPHW03/assets/55886989/9d27902e-e8dc-45f7-84c7-a2899c286743)
 
+Compare these results with the original one using TF*IDF:
+
+![image](https://github.com/smhavens/NLPHW03/assets/55886989/d42a58cc-81ee-4f21-965b-4a7f8499a3ed)
+
+The results using embeddings instead seem to have some improvements (0's precision & 1's recall) but generally have worse scores overall. Potentially this embedding improvement would work better with a larger training base for the model (and not just simple wikipedia) or to use a database more likely to use terminology applicable to sentiment analysis and opinion pieces.
+
 ### Reflection
+This assignment gave me a much better understanding of both the application of embeddings but also how classifiers are developed. It was also interesting to see just how different results can be with different training datasets (urban dictionary vs fasttext vs simple wikipedia) and also how it is best to train on applicable datasets for what you will later test on (as I found with the sentiment classifier using simple wikipedia embeddings).
+
+I faced challenges with many of the models having deprecated features and needing to learn new variations to have everything returning expected results, especially with Gensim's updates to the KeyedVector model. There was also wrapping my head around exactly how to use word embeddings, as even though we go over them in class, applying them myself meant I really needed to look over what I'd learned.
